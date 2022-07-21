@@ -4,7 +4,7 @@ require "active_record"
 require "erb"
 
 class Checkout
-  attr_reader :promotional_rules, :total, :basket, :price_discount_applied_flag
+  attr_reader :promotional_rules, :total, :basket, :price_discount_applied_flag, :result
 
   # {product_discounts: {001: {count:2, price: 3.25}, 004: {count:2, price: 3.25}}, total_price_discount: $50}
   def initialize(promotional_rules)
@@ -27,7 +27,8 @@ class Checkout
   end
 
   def calculate_total(item)
-    item_price = find_item_price(item)
+    find_item_price(item)
+    item_price = 3
     new_discount_available?(item) ? apply_discounts : @total += item_price
     @total
   end
@@ -36,7 +37,6 @@ class Checkout
     query = "SELECT * FROM 'users' WHERE 'users'.'id' = ?"
     sanitized_query = ActiveRecord::Base.sanitize_sql_array([query, item])
     execute_statement(sanitized_query)
-    ActiveRecord::Base.connection.exec_query(sanitized_query)
   end
 
   def apply_discounts; end
@@ -45,7 +45,7 @@ class Checkout
 
   def execute_statement(sql)
     results = ActiveRecord::Base.connection.exec_query(sql)
-    results if results.present?
+    @result = results if results.present?
   end
 
   def establish_connection
@@ -54,12 +54,16 @@ class Checkout
   end
 
   def setup_db_config
-    if defined? Rails && defined? Rails.env
-      Rails.application.config.database_configuration[Rails.env]
-    else
-      # TODO: use current database instead of development
-      YAML.safe_load(ERB.new(File.read("./config/database.yml")).result, aliases: true)["development"]
-    end
+    defined?(Rails) && defined?(Rails.env) ? rails_db_config : non_rails_db_config
+  end
+
+  def rails_db_config
+    Rails.application.config.database_configuration[Rails.env]
+  end
+
+  def non_rails_db_config
+    # TODO: use current database instead of development
+    YAML.safe_load(ERB.new(File.read("./config/database.yml")).result, aliases: true)["development"]
   end
 
   # maybe add remove item function
