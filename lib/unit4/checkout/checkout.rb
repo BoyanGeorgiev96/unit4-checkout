@@ -65,6 +65,6 @@ class Checkout
   # maybe add remove item function
 
   def add_to_basket(item)
-    @basket[item] ? @basket["item"] += 1 : @basket["item"] = 1
+    @basket.items[item] ? @basket.items[item] += 1 : @basket.items[item] = 1
   end
 end
