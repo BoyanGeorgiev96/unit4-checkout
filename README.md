@@ -50,7 +50,7 @@ rspec
 
 Use a user supplied database instead of the "products" one. Different attribute names for price can be incorporated too.
 
-Test the gem thoroughly against a plain Ruby project. Environment will either be (most likely) non-existent there so some changes in the `Connection.non_rails_db_config` will be needed.
+Test the gem thoroughly against a plain Ruby project. Environment will be (most likely) non-existent there so some changes in the `Connection.non_rails_db_config` will be needed.
 
 ## Contributing
 
