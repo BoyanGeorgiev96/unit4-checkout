@@ -8,12 +8,14 @@ Gem::Specification.new do |spec|
   spec.authors = ["Boyan Georgiev"]
   spec.email = ["bbgeorgiev96@gmail.com"]
 
-  spec.summary = "Initial commit"
-  spec.description = "Initial commit"
+  spec.summary = "Checkout gem for Unit4 technical task"
+  spec.description = "A Ruby gem that helps the user implement a checkout system by supplying only the promotional rules"
   spec.homepage = "https://github.com/BoyanGeorgiev96/unit4-checkout"
+  spec.licenses = ["MIT"]
   spec.required_ruby_version = ">= 2.6.0"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org/"
+  
 
   spec.metadata["homepage_uri"] = spec.homepage
   spec.metadata["source_code_uri"] = "https://github.com/BoyanGeorgiev96/unit4-checkout"

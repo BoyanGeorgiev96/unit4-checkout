@@ -1,23 +1,24 @@
 # frozen_string_literal: true
 
-require "active_record"
-require "erb"
-
 class Checkout
-  attr_reader :promotional_rules, :total, :basket, :total_price_discount_applied_flag, :result
+  attr_reader :total
 
   def initialize(promotional_rules = {})
-    raise TypeError, "expected a Hash, got #{promotional_rules.class.name}" unless promotional_rules.is_a? Hash
-    raise KeyError, "expected Hash with optional keys 'product_discounts' and 'total_price_discount" unless correct_keys?(promotional_rules)
+    raise PromotionalRulesTypeError, promotional_rules.class.name unless promotional_rules.is_a? Hash
+    raise PromotionalRulesForbiddenKeys unless correct_keys?(promotional_rules)
 
     @promotional_rules = promotional_rules
     @total = 0
     @basket = Basket.new
-    establish_connection
+    create_db_connection
   end
 
   def correct_keys?(promotional_rules)
     (promotional_rules.keys - %i[product_discounts total_price_discount]).empty?
+  end
+
+  def create_db_connection
+    Connection.new
   end
 
   # maybe facilitate scanning multiple items at once
@@ -27,7 +28,6 @@ class Checkout
     add_to_basket(item)
     calculate_total(item)
     puts "Item with ID '#{item}' has been added to the basket successfully!"
-    @total
   end
 
   def calculate_total(item)
@@ -38,18 +38,12 @@ class Checkout
       item_discounted?(item) ? apply_item_discount(item, item_price) : @total += item_price
       apply_total_discount if total_price_discounted?
     end
-    @total = @total.ceil(2)
+    @total = @total.round(2)
   end
 
   def item_price(item)
-    # TODO: check if user has supplied price
     # TODO: facilitate DB name different from products, i.e. ask gem user for db name???
-    find_price_sql(item)
-  end
-
-  def prepare_sql_statement(item)
-    # TODO: keep seen items in cache or variable  !!!!!!!!!
-    ActiveRecord::Base.sanitize_sql_array(["SELECT 'products'.'price' FROM 'products' WHERE 'products'.'id' = ?", item])
+    PriceQuery.new(item).find_price
   end
 
   def apply_item_and_total_discount(item, item_price)
@@ -105,32 +99,6 @@ class Checkout
     @total *= (1 - @promotional_rules[:total_price_discount][:percent] / 100.00)
     @total_price_discount_applied_flag = true
   end
-
-  def find_price_sql(item)
-    sanitized_query = prepare_sql_statement(item)
-    results = ActiveRecord::Base.connection.exec_query(sanitized_query)
-    results.rows.first.first if results.present?
-  end
-
-  def establish_connection
-    db_config = setup_db_config
-    ActiveRecord::Base.establish_connection(adapter: db_config["adapter"], database: db_config["database"])
-  end
-
-  def setup_db_config
-    defined?(Rails) && defined?(Rails.env) ? rails_db_config : non_rails_db_config
-  end
-
-  def rails_db_config
-    Rails.application.config.database_configuration[Rails.env]
-  end
-
-  def non_rails_db_config
-    # TODO: use current database instead of development
-    YAML.safe_load(ERB.new(File.read("./config/database.yml")).result, aliases: true)["development"]
-  end
-
-  # maybe add remove item function
 
   def add_to_basket(item)
     @basket.items[item] ? @basket.items[item] += 1 : @basket.items[item] = 1
