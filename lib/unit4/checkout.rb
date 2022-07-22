@@ -8,8 +8,6 @@ require_relative "checkout/price_query"
 require_relative "checkout/exceptions"
 
 module Unit4
-  module Checkout
-    class Error < StandardError; end
-    # Your code goes here...
-  end
+  # the main module for the gem, no code really needed here with the current structure
+  module Checkout; end
 end
