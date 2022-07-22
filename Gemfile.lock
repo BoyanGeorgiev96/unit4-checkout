@@ -1,7 +1,9 @@
 PATH
   remote: .
   specs:
-    unit4-checkout (0.2.1)
+    unit4-checkout (0.2.2)
+      activerecord (~> 7.0.3)
+      erb
 
 GEM
   remote: https://rubygems.org/

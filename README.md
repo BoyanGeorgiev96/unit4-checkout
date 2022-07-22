@@ -1,9 +1,3 @@
-# Unit4::Checkout
-
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/unit4/checkout`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
-
 ## Installation
 
 Install the gem and add to the application's Gemfile by executing:
@@ -16,14 +10,48 @@ If bundler is not being used to manage dependencies, install the gem by executin
 
 ## Usage
 
-TODO: Write usage instructions here
+Please note the gem relies on a database connection to the "products" table. Please make sure you have that table created and products have the 'price' attribute (float, non-nil).
 
-## Development
+Create a Checkout instance with OPTIONAL promotional rules:
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+```
+co = Checkout.new(promotional_rules)
+```
+The promotional rules need to have the following structure (note the "=>" after the item id that is used for a key):
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+```
+promotional_rules = { product_discounts: { "001" => { count: 2, price: 8.50 } },
+                          total_price_discount: { price: 60.00, percent: 10 } }
+```
+
+Scanning items:
+
+```
+co.scan("001")
+```
+
+Access the total price:
+
+```
+co.total
+```
+
+## Testing
+
+The gem has its own database config and database for testing that complies with the requested format
+
+To run the test suite in the console using RSpec, run
+
+```
+rspec
+```
+
+## Future work
+
+Use a user supplied database instead of the "products" one. Different attribute names for price can be incorporated too.
+
+Test the gem thoroughly against a plain Ruby project. Environment will either be (most likely) non-existent there so some changes in the `Connection.non_rails_db_config` will be needed.
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/unit4-checkout.
+Bug reports and pull requests are welcome on GitHub at https://github.com/BoyanGeorgiev96/unit4-checkout.

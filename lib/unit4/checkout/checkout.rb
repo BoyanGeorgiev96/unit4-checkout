@@ -12,6 +12,7 @@ class Checkout
     @promotional_rules = promotional_rules
     @total = 0
     @basket = Basket.new
+    @saved_prices = {}
     create_db_connection
   end
 
@@ -38,6 +39,8 @@ class Checkout
 
   def calculate_total(item)
     item_price = item_price(item)
+    # use a hash to store seen non-discounted prices so the database is not queried when we already have the info
+    @saved_prices[item] ||= item_price
     if @total_price_discount_applied_flag
       item_discounted?(item) ? apply_item_and_total_discount(item, item_price) : apply_total_discount_on_item(item_price)
     else
@@ -50,7 +53,7 @@ class Checkout
 
   def item_price(item)
     # Future work: facilitate DB table name different from products, i.e. ask gem user for db name
-    PriceQuery.new(item).find_price
+    PriceQuery.new(item).find_price(@saved_prices)
   end
 
   # apply both types of discounts at the same time
